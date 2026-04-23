@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './contexts/AuthContext';
-import { Calendar, RotateCcw, Download, ThumbsUp, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Calendar, RotateCcw, Share2, Camera, ThumbsUp, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { toBlob } from 'html-to-image';
 import { KpiCard } from './components/KpiCard';
 import { DepartmentTable } from './components/DepartmentTable';
 import { departmentData as initialData } from './data';
@@ -15,6 +16,7 @@ export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
   const [showToast, setShowToast] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const captureRef = useRef<HTMLDivElement>(null);
 
   // Single Sync Effect: Handles auth-based data synchronization
   useEffect(() => {
@@ -158,31 +160,60 @@ export default function App() {
     setTimeout(() => setShowToast(null), 3000);
   };
 
-  const handleExport = () => {
-    const headers = ['Setor', 'Realizado', 'Meta', 'Status'];
-    const rows = data.map(item => [
-      item.setor,
-      item.realizado.toString().replace('.', ','),
-      item.meta.toString().replace('.', ','),
-      item.status.toString().replace('.', ',') + '%'
-    ]);
-
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map(e => e.join(';'))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `relatorio_trocas_${currentDate}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleShareScreenshot = async () => {
+    if (!captureRef.current) return;
+    setIsLoading(true);
+    triggerToast('Gerando imagem...');
     
-    triggerToast('Relatório exportado!');
+    try {
+      const filterNodes = (node: HTMLElement) => {
+        return !node.classList?.contains('no-capture');
+      };
+
+      const blob = await toBlob(captureRef.current, {
+        backgroundColor: '#020617', // slate-950
+        pixelRatio: 2,
+        filter: filterNodes,
+      });
+      
+      if (!blob) {
+        triggerToast('Erro ao gerar imagem.');
+        setIsLoading(false);
+        return;
+      }
+
+      const file = new File([blob], `relatorio_trocas_${currentDate}.png`, { type: 'image/png' });
+
+      // Tenta usar a Web Share API (Natividade no mobile para WhatsApp)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'Relatório Diário de Trocas',
+            text: `Relatório do dia ${currentDate}`,
+          });
+          triggerToast('Compartilhado com sucesso!');
+        } catch (e) {
+          console.log('Compartilhamento cancelado', e);
+        }
+      } else {
+        // Fallback para download na web onde o share nativo não funciona
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `relatorio_trocas_${currentDate}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        triggerToast('Imagem salva para enviar pelo WhatsApp!');
+      }
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      triggerToast('Erro ao capturar tela.');
+      setIsLoading(false);
+    }
   };
 
   // Calculate totals
@@ -195,7 +226,7 @@ export default function App() {
   const worstSector = data.length > 0 ? [...data].sort((a, b) => b.status - a.status)[0] : null;
 
   return (
-    <div className="min-h-screen p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 text-white relative">
+    <div ref={captureRef} className="min-h-screen p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 text-white relative bg-slate-950">
       <div className="bg-blur" />
       
       <AnimatePresence>
@@ -204,7 +235,7 @@ export default function App() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed top-8 left-1/2 -translate-x-1/2 z-50 glass px-6 py-3 rounded-full flex items-center gap-3 border-white/20 shadow-2xl"
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-50 glass px-6 py-3 rounded-full flex items-center gap-3 border-white/20 shadow-2xl no-capture"
           >
             <CheckCircle2 className="w-5 h-5 text-green-400" />
             <span className="text-sm font-medium">{showToast}</span>
@@ -218,14 +249,14 @@ export default function App() {
             Relatório de Trocas Diário
           </h1>
           {isLoading && (
-            <div className="flex items-center gap-2 mt-2 text-white/40 text-xs text-cyan-400">
+            <div className="flex items-center gap-2 mt-2 text-white/40 text-xs text-cyan-400 no-capture">
               <Loader2 className="w-3 h-3 animate-spin" />
               Sincronizando...
             </div>
           )}
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 no-capture">
           <div className="glass rounded-lg px-3 py-2 flex items-center gap-3 shadow-sm border-white/10 group cursor-pointer hover:bg-white/15 transition-colors relative">
             <Calendar className="w-4 h-4 text-white/60 group-hover:text-white transition-colors pointer-events-none" />
             <input 
@@ -246,12 +277,12 @@ export default function App() {
           </button>
 
           <button 
-            onClick={handleExport}
+            onClick={handleShareScreenshot}
             disabled={isLoading}
-            className="bg-white/80 hover:bg-white text-slate-900 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 border border-white/20 backdrop-blur-md disabled:opacity-50"
+            className="bg-[#25D366] hover:bg-[#20b858] text-white rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 border border-white/20 backdrop-blur-md disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
-            Exportar
+            <Camera className="w-4 h-4" />
+            Capturar P/ WhatsApp
           </button>
         </div>
       </header>
