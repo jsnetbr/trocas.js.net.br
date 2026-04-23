@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './contexts/AuthContext';
-import { Calendar, RotateCcw, Share2, Camera, ThumbsUp, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Calendar, RotateCcw, Camera, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toBlob } from 'html-to-image';
 import { KpiCard } from './components/KpiCard';
@@ -222,9 +222,6 @@ export default function App() {
   const totalVariance = totalRealized - totalGoal;
   const variancePercentage = totalGoal > 0 ? (totalVariance / totalGoal) * 100 : 0;
 
-  const bestSector = data.length > 0 ? [...data].sort((a, b) => a.status - b.status)[0] : null;
-  const worstSector = data.length > 0 ? [...data].sort((a, b) => b.status - a.status)[0] : null;
-
   return (
     <div ref={captureRef} className="min-h-screen p-1 sm:p-2 max-w-[1200px] mx-auto space-y-2 md:space-y-4 text-white relative bg-slate-950">
       <div className="bg-blur" />
@@ -287,7 +284,7 @@ export default function App() {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10 px-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10 px-1">
         <KpiCard title="Total Realizado" value={formatCurrency(totalRealized)} delay={0.1} />
         <KpiCard title="Meta Total" value={formatCurrency(totalGoal)} delay={0.2} />
         <KpiCard 
@@ -297,25 +294,6 @@ export default function App() {
           type="variance"
           delay={0.3}
         />
-        
-        <KpiCard title="Insights" value="" type="insight" delay={0.4}>
-          <div className="space-y-1 mt-[-6px]">
-            <div className="flex items-start gap-1">
-              <ThumbsUp className="w-[10px] h-[10px] text-green-300 mt-0.5" />
-              <div>
-                <p className="text-[9px] font-medium text-white/90 leading-none">Melhor: {bestSector?.setor || '-'}</p>
-                <p className="text-[8px] text-white/40 leading-none mt-0.5">St: {formatPercentage(bestSector?.status || 0)}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-1">
-              <AlertCircle className="w-[10px] h-[10px] text-red-300 mt-0.5" />
-              <div>
-                <p className="text-[9px] font-medium text-white/90 leading-none">Pior: {worstSector?.setor || '-'}</p>
-                <p className="text-[8px] text-white/40 leading-none mt-0.5">St: {formatPercentage(worstSector?.status || 0)}</p>
-              </div>
-            </div>
-          </div>
-        </KpiCard>
       </div>
 
       <div className="relative z-10">

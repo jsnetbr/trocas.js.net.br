@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, ThumbsUp, AlertCircle } from 'lucide-react';
 import { DepartmentData } from '../types';
 
 interface DepartmentTableProps {
@@ -27,6 +27,9 @@ export const DepartmentTable: React.FC<DepartmentTableProps> = ({ data, onUpdate
     onUpdate(id, { [field]: numValue });
   };
 
+  const bestSector = data.length > 0 ? [...data].sort((a, b) => a.status - b.status)[0] : null;
+  const worstSector = data.length > 0 ? [...data].sort((a, b) => b.status - a.status)[0] : null;
+
   return (
     <div className="glass rounded-2xl shadow-2xl overflow-hidden mx-1">
       <div className="px-4 py-2 border-b border-white/10">
@@ -51,6 +54,8 @@ export const DepartmentTable: React.FC<DepartmentTableProps> = ({ data, onUpdate
               // status > 0 means we are ABOVE the limit (Bad for Trocas)
               const isAboveMeta = item.status > 0;
               const isBelowMeta = item.status < 0;
+              const isBest = item.id === bestSector?.id;
+              const isWorst = item.id === worstSector?.id;
 
               return (
                 <motion.tr
@@ -60,7 +65,13 @@ export const DepartmentTable: React.FC<DepartmentTableProps> = ({ data, onUpdate
                   transition={{ delay: index * 0.05 }}
                   className="group hover:bg-white/5 transition-colors"
                 >
-                  <td className="px-2 md:px-3 py-1.5 text-[11px] md:text-xs font-medium text-white/80 whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] sm:max-w-none" title={item.setor}>{item.setor}</td>
+                  <td className="px-2 md:px-3 py-1.5 text-[11px] md:text-xs font-medium text-white/80 whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] sm:max-w-none" title={item.setor}>
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate">{item.setor}</span>
+                      {isBest && <ThumbsUp className="w-3 h-3 text-green-400 shrink-0" />}
+                      {isWorst && <AlertCircle className="w-3 h-3 text-red-400 shrink-0" />}
+                    </div>
+                  </td>
                   <td className="px-2 md:px-3 py-1.5 text-[11px] md:text-xs text-right tabular-nums group/cell">
                     <div className="relative inline-block">
                       <input
