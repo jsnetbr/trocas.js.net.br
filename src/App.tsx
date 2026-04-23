@@ -226,7 +226,7 @@ export default function App() {
   const worstSector = data.length > 0 ? [...data].sort((a, b) => b.status - a.status)[0] : null;
 
   return (
-    <div ref={captureRef} className="min-h-screen p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 text-white relative bg-slate-950">
+    <div ref={captureRef} className="min-h-screen p-2 sm:p-4 md:p-6 max-w-[1200px] mx-auto space-y-4 md:space-y-6 text-white relative bg-slate-950">
       <div className="bg-blur" />
       
       <AnimatePresence>
@@ -243,51 +243,51 @@ export default function App() {
         )}
       </AnimatePresence>
       
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 relative z-10">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 md:mb-6 relative z-10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-sm">
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-sm">
             Relatório de Trocas Diário
           </h1>
           {isLoading && (
-            <div className="flex items-center gap-2 mt-2 text-white/40 text-xs text-cyan-400 no-capture">
+            <div className="flex items-center gap-2 mt-1 text-white/40 text-[10px] md:text-xs text-cyan-400 no-capture">
               <Loader2 className="w-3 h-3 animate-spin" />
               Sincronizando...
             </div>
           )}
         </div>
         
-        <div className="flex items-center gap-3 no-capture">
-          <div className="glass rounded-lg px-3 py-2 flex items-center gap-3 shadow-sm border-white/10 group cursor-pointer hover:bg-white/15 transition-colors relative">
-            <Calendar className="w-4 h-4 text-white/60 group-hover:text-white transition-colors pointer-events-none" />
+        <div className="flex flex-wrap items-center gap-2 no-capture">
+          <div className="glass rounded-lg px-2 py-1.5 md:px-3 md:py-2 flex items-center gap-2 shadow-sm border-white/10 group cursor-pointer hover:bg-white/15 transition-colors relative">
+            <Calendar className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors pointer-events-none" />
             <input 
               type="date" 
               value={currentDate} 
               onChange={(e) => setCurrentDate(e.target.value)}
-              className="bg-transparent border-none text-sm font-medium text-white/80 focus:ring-0 w-32 cursor-pointer outline-none [color-scheme:dark]"
+              className="bg-transparent border-none text-xs md:text-sm font-medium text-white/80 focus:ring-0 w-[110px] md:w-32 cursor-pointer outline-none [color-scheme:dark]"
             />
           </div>
 
           <button 
             onClick={handleReset}
             disabled={isLoading}
-            className="bg-white/10 hover:bg-white/20 text-white rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 border border-white/10 backdrop-blur-md disabled:opacity-50"
+            className="bg-white/10 hover:bg-white/20 text-white rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all active:scale-95 border border-white/10 backdrop-blur-md disabled:opacity-50"
           >
-            <RotateCcw className="w-4 h-4" />
-            Zerar Realizados
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Zerar</span>
           </button>
 
           <button 
             onClick={handleShareScreenshot}
             disabled={isLoading}
-            className="bg-[#25D366] hover:bg-[#20b858] text-white rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 border border-white/20 backdrop-blur-md disabled:opacity-50"
+            className="bg-[#25D366] hover:bg-[#20b858] text-white rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all active:scale-95 border border-white/20 backdrop-blur-md disabled:opacity-50"
           >
-            <Camera className="w-4 h-4" />
-            Capturar P/ WhatsApp
+            <Camera className="w-3.5 h-3.5" />
+            Capturar
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 relative z-10">
         <KpiCard title="Total Realizado" value={formatCurrency(totalRealized)} delay={0.1} />
         <KpiCard title="Meta Total" value={formatCurrency(totalGoal)} delay={0.2} />
         <KpiCard 
@@ -299,19 +299,19 @@ export default function App() {
         />
         
         <KpiCard title="Insights" value="" type="insight" delay={0.4}>
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <ThumbsUp className="w-4 h-4 text-green-300" />
+          <div className="space-y-2 mt-[-5px]">
+            <div className="flex items-start gap-2">
+              <ThumbsUp className="w-3 h-3 text-green-300 mt-1" />
               <div>
-                <p className="text-xs font-semibold text-white/90">Melhor: {bestSector?.setor || '-'}</p>
-                <p className="text-[10px] text-white/40">Status: {formatPercentage(bestSector?.status || 0)}</p>
+                <p className="text-[11px] font-medium text-white/90">Melhor: {bestSector?.setor || '-'}</p>
+                <p className="text-[9px] text-white/40">Status: {formatPercentage(bestSector?.status || 0)}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-red-300" />
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-3 h-3 text-red-300 mt-1" />
               <div>
-                <p className="text-xs font-semibold text-white/90">Pior: {worstSector?.setor || '-'}</p>
-                <p className="text-[10px] text-white/40">Status: {formatPercentage(worstSector?.status || 0)}</p>
+                <p className="text-[11px] font-medium text-white/90">Pior: {worstSector?.setor || '-'}</p>
+                <p className="text-[9px] text-white/40">Status: {formatPercentage(worstSector?.status || 0)}</p>
               </div>
             </div>
           </div>
